@@ -1,0 +1,17 @@
+.container-main.py-5 {
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+.table img {
+    object-fit: cover;
+}
+
+.container.py-5 {
+    max-width: 1800px;
+    margin: 0 auto;
+}
+
+th {
+    width: 0%;
+}
