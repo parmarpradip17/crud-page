@@ -4,17 +4,18 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Check if we're editing an existing student
+// Define $isEdit before using it
 $isEdit = isset($_GET['student_id']);
 $studentData = [];
 $studentHobbies = [];
 
+// Fetch existing student data if editing
 if ($isEdit) {
     $studentId = intval($_GET['student_id']);
 
-    // Get basic student info
+    // Student details
     $stmt = $conn->prepare("
-        SELECT sb.*, sg.*, q.qualification_name, sa.percentage, sa.passing_year, sa.university 
+        SELECT sb.*, sg.*, sa.percentage, sa.passing_year, sa.university, q.qualification_name
         FROM stud_basic_info sb
         JOIN stud_gen_info sg ON sb.id = sg.student_id
         JOIN stud_academic_info sa ON sb.id = sa.student_id
@@ -27,7 +28,7 @@ if ($isEdit) {
     $studentData = $result->fetch_assoc();
     $stmt->close();
 
-    // Get student hobbies
+    // Student hobbies
     $stmt = $conn->prepare("
         SELECT h.hobby_name 
         FROM stud_hobbies sh
@@ -43,43 +44,21 @@ if ($isEdit) {
     $stmt->close();
 }
 
-// Get qualifications and hobbies for dropdowns
-
+// Get qualifications
 $qualifications = [];
-$res = $conn->query("SELECT qualification_name FROM qualifications");
-while ($row = $res->fetch_assoc()) {
+$result = $conn->query("SELECT qualification_name FROM qualifications ORDER BY qualification_name ASC");
+while ($row = $result->fetch_assoc()) {
     $qualifications[] = $row['qualification_name'];
 }
 
-// Check if only one qualification exists and it is "OTHERS"
-if (count($qualifications) === 1 && strtoupper($qualifications[0]) === 'OTHERS') {
-    echo '
-    <div class="col-md-6">
-        <label class="form-label">Add New Qualification</label>
-        <input type="text" name="quali" class="form-control" placeholder="Enter your qualification" required>
-    </div>';
-    exit;
-}
-
-
-
+// Get hobbies
 $hobbiesList = [];
-$res = $conn->query("SELECT hobby_name FROM hobbies");
-while ($row = $res->fetch_assoc()) {
+$result = $conn->query("SELECT hobby_name FROM hobbies ORDER BY hobby_name ASC");
+while ($row = $result->fetch_assoc()) {
     $hobbiesList[] = $row['hobby_name'];
 }
-
-// Check if only one hobbies exists and it is "OTHERS"
-if (count($hobbiesList) === 1 && strtoupper($hobbiesList[0]) === 'OTHERS') {
-    echo '
-    <div class="col-md-6">
-        <label class="form-label">Add New hobby</label>
-        <input type="text" name="quali" class="form-control" placeholder="Enter your qualification" required>
-    </div>';
-    exit;
-}
-
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -88,7 +67,7 @@ if (count($hobbiesList) === 1 && strtoupper($hobbiesList[0]) === 'OTHERS') {
     <meta charset="UTF-8">
     <title><?= $isEdit ? 'Edit' : 'Add' ?> Student Resume</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./css/style.css"> 
+    <link rel="stylesheet" href="./css/style.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 </head>
 
@@ -103,10 +82,10 @@ if (count($hobbiesList) === 1 && strtoupper($hobbiesList[0]) === 'OTHERS') {
             </div>
         <?php endif; ?>
 
-        <form id="stud_form" class="needs-validation" method="POST"
+        <form id="stud_form" class="needs-validation" enctype="multipart/form-data" method="POST"
             action="<?= $isEdit ? '04_update.php' : '03_insert.php' ?>"
             enctype="multipart/form-data" novalidate>
-
+            <input type="hidden" id="hobbies_final" name="hobbies_final">
             <?php if ($isEdit): ?>
                 <input type="hidden" name="student_id" value="<?= $studentId ?>">
             <?php endif; ?>
@@ -213,21 +192,33 @@ if (count($hobbiesList) === 1 && strtoupper($hobbiesList[0]) === 'OTHERS') {
 
                 <!-- Academic Information -->
 
-                <div class="col-md-8 position-relative">
+
+
+                <!-- Qualification Dropdown -->
+                <div class="col-md-6">
                     <label class="form-label">Qualification</label>
-                    <input type="text" name="quali" id="quali_input" class="form-control" required>
-                    <div id="quali_dropdown" class="autocomplete-dropdown"></div>
-                    <div id="quali_add_container" class="mt-2" style="display: none;">
-                        <input type="text" id="quali_add_input" class="form-control mb-2" placeholder="Add new qualification">
-                        <button type="button" id="quali_add_btn" class="btn btn-sm btn-success">Add Qualification</button>
-                    </div>
+                    <select name="quali" id="quali_select" class="form-select" required>
+                        <option value="">-- Select Qualification --</option>
+                        <?php foreach ($qualifications as $q): ?>
+                            <option value="<?= htmlspecialchars($q) ?>"
+                                <?= (!empty($studentData) && $studentData['qualification_name'] === $q) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($q) ?>
+                            </option>
+                        <?php endforeach; ?>
+                        <option value="OTHERS">Others</option>
+                    </select>
                 </div>
-                <?php if (count($qualifications) === 1 && strtoupper($qualifications[0]) === 'OTHERS'): ?>
-                    <div class="col-md-6">
-                        <label class="form-label">Add New Qualification</label>
-                        <input type="text" name="quali" class="form-control" placeholder="Enter your qualification" required>
+
+                <!-- Custom Qualification Input & Save Button -->
+                <div id="other_qualification_container" class="col-md-12" style="display: none;">
+                    <label class="form-label">Enter New Qualification</label>
+                    <div class="input-group">
+                        <input type="text" id="other_quali_input" class="form-control" placeholder="Type new qualification">
+                        <button type="button" id="save_quali_btn" class="btn btn-success">Save Qualification</button>
                     </div>
-                <?php endif; ?>
+                    <div id="save_quali_msg" class="form-text text-danger mt-1"></div>
+                </div>
+
 
 
 
@@ -253,23 +244,28 @@ if (count($hobbiesList) === 1 && strtoupper($hobbiesList[0]) === 'OTHERS') {
                 </div>
 
                 <!-- Hobbies -->
-                <div class="col-md-12 position-relative">
+                <div class="col-md-6">
                     <label class="form-label">Hobbies</label>
-                    <input type="text" id="hobbies_input" class="form-control" placeholder="Type to search hobbies...">
-                    <div id="hobbies_dropdown" class="autocomplete-dropdown"></div>
-                    <div id="selected_hobbies" class="multi-selected mt-2"></div>
-                    <input type="hidden" name="hobbies_final" id="hobbies_final">
-                    <div id="hobby_add_container" class="mt-2" style="display: none;">
-                        <input type="text" id="hobby_add_input" class="form-control mb-2" placeholder="Add new hobby">
-                        <button type="button" id="hobby_add_btn" class="btn btn-sm btn-success">Add Hobby</button>
-                    </div>
+                    <select name="hobby" id="hobby_select" class="form-select" required>
+                        <option value="">-- Select Hobby --</option>
+                        <?php foreach ($hobbiesList as $h): ?>
+                            <option value="<?= htmlspecialchars($h) ?>"
+                                <?= (!empty($studentData) && $studentData['hobby_name'] === $h) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($h) ?>
+                            </option>
+                        <?php endforeach; ?>
+                        <option value="OTHERS">Others</option>
+                    </select>
                 </div>
-                <?php if (count($hobbiesList) === 1 && strtoupper($hobbiesList[0]) === 'OTHERS'): ?>
-                    <div class="col-md-6">
-                        <label class="form-label">Add New Hobby</label>
-                        <input type="text" name="hobby" class="form-control" placeholder="Enter your hobby" required>
+
+                <div id="other_hobby_container" class="col-md-12" style="display: none;">
+                    <label class="form-label">Enter New Hobby</label>
+                    <div class="input-group">
+                        <input type="text" id="other_hobby_input" class="form-control" placeholder="Type new hobby">
+                        <button type="button" id="save_hobby_btn" class="btn btn-success">Save Hobby</button>
                     </div>
-                <?php endif; ?>
+                    <div id="save_hobby_msg" class="form-text text-danger mt-1"></div>
+                </div>
             </div>
 
             <div class="d-flex justify-content-between mt-4">
@@ -279,11 +275,14 @@ if (count($hobbiesList) === 1 && strtoupper($hobbiesList[0]) === 'OTHERS') {
         </form>
     </div>
 
+    <script src="./js/qualifications.js"></script>
     <script>
         const qualifications = <?= json_encode($qualifications) ?>;
         const hobbies = <?= json_encode($hobbiesList) ?>;
         const isEditMode = <?= $isEdit ? 'true' : 'false' ?>;
     </script>
+
+    <script src="./js/hobbies.js"></script>
     <script src="./js/form.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -1,36 +1,43 @@
 $(document).ready(function () {
-    const form = $('#stud_form');
+    const $form = $('#stud_form');
     const qualifications = window.qualifications || [];
     const hobbies = window.hobbies || [];
     const isEditMode = window.isEditMode || false;
 
-    // ---- QUALIFICATION AUTOCOMPLETE ----
+    // === Qualification Autocomplete ===
     const $qualiInput = $('#quali_input');
     const $qualiDropdown = $('#quali_dropdown');
     const $qualiAddContainer = $('#quali_add_container');
     const $qualiAddInput = $('#quali_add_input');
 
     $qualiInput.on('input', function () {
-        const term = $qualiInput.val().toLowerCase().trim();
-        $qualiDropdown.empty();
+        const term = $(this).val().toLowerCase().trim();
+        $qualiDropdown.empty().toggle(!!term);
 
-        if (!term) return $qualiDropdown.hide();
+        if (!term) return;
 
         const filtered = qualifications.filter(q => q.toLowerCase().includes(term));
         if (filtered.length) {
-            filtered.forEach(item => $qualiDropdown.append(`<div class="dropdown-item">${item}</div>`));
+            filtered.forEach(q => {
+                $('<div/>', {
+                    class: 'dropdown-item',
+                    text: q
+                }).appendTo($qualiDropdown);
+            });
         } else {
-            $qualiDropdown.append(`<div class="dropdown-item text-muted">No match. Add new?</div>`);
+            $('<div/>', {
+                class: 'dropdown-item text-muted',
+                text: 'No match. Add new?',
+                'data-add-new': true
+            }).appendTo($qualiDropdown);
         }
-        $qualiDropdown.show();
     });
 
     $qualiDropdown.on('click', '.dropdown-item', function () {
-        const val = $(this).text();
-        if (val === 'No match. Add new?') {
+        if ($(this).data('add-new')) {
             $qualiAddContainer.show();
         } else {
-            $qualiInput.val(val);
+            $qualiInput.val($(this).text());
             $qualiAddContainer.hide();
         }
         $qualiDropdown.hide();
@@ -39,13 +46,13 @@ $(document).ready(function () {
     $('#quali_add_btn').on('click', function () {
         const newQuali = $qualiAddInput.val().trim();
         if (!newQuali) return;
-        qualifications.push(newQuali);
+        if (!qualifications.includes(newQuali)) qualifications.push(newQuali);
         $qualiInput.val(newQuali);
         $qualiAddInput.val('');
         $qualiAddContainer.hide();
     });
 
-    // ---- HOBBIES MULTISELECT ----
+    // === Hobbies Multiselect ===
     const $hobbiesInput = $('#hobbies_input');
     const $hobbiesDropdown = $('#hobbies_dropdown');
     const $selectedHobbies = $('#selected_hobbies');
@@ -54,97 +61,103 @@ $(document).ready(function () {
     const $hobbyAddInput = $('#hobby_add_input');
 
     function updateHobbiesFinal() {
-        const list = [];
-        $selectedHobbies.find('.badge').each(function () {
-            list.push($(this).text().trim().split(' ')[0]);
-        });
+        const list = $selectedHobbies.find('.badge').map(function () {
+            return $(this).data('hobby');
+        }).get();
+
         $hobbiesFinal.val(list.join(', '));
 
-        if (list.length === 0) {
-            $hobbiesInput[0].setCustomValidity('Please select at least one hobby.');
-        } else {
-            $hobbiesInput[0].setCustomValidity('');
-        }
+        $hobbiesInput[0].setCustomValidity(list.length ? '' : 'Please select at least one hobby.');
     }
 
     $hobbiesInput.on('input', function () {
-        const term = $hobbiesInput.val().toLowerCase().trim();
-        $hobbiesDropdown.empty();
+        const term = $(this).val().toLowerCase().trim();
+        $hobbiesDropdown.empty().toggle(true);
 
-        const filtered = hobbies.filter(h => h.toLowerCase().includes(term));
+        const selected = new Set($selectedHobbies.find('.badge').map(function () {
+            return $(this).data('hobby');
+        }).get());
+
+        const filtered = hobbies.filter(h => h.toLowerCase().includes(term) && !selected.has(h));
+
         if (filtered.length) {
             filtered.forEach(h => {
-                if (!$hobbiesFinal.val().includes(h)) {
-                    $hobbiesDropdown.append(`<div class="dropdown-item">${h}</div>`);
-                }
+                $('<div/>', {
+                    class: 'dropdown-item',
+                    text: h
+                }).appendTo($hobbiesDropdown);
             });
         } else {
-            $hobbiesDropdown.append('<div class="dropdown-item text-muted">No match. Add new?</div>');
+            $('<div/>', {
+                class: 'dropdown-item text-muted',
+                text: 'No match. Add new?',
+                'data-add-new': true
+            }).appendTo($hobbiesDropdown);
         }
-        $hobbiesDropdown.show();
     });
 
     $hobbiesDropdown.on('click', '.dropdown-item', function () {
-        const hobby = $(this).text();
-        if (hobby === 'No match. Add new?') {
+        if ($(this).data('add-new')) {
             $hobbyAddContainer.show();
         } else {
-            const badge = $(`<span class="badge bg-primary me-1 mb-1">${hobby} <span class="remove-hobby ms-1" style="cursor:pointer;">&times;</span></span>`);
-            $selectedHobbies.append(badge);
-            updateHobbiesFinal();
+            const hobby = $(this).text();
+            if ($selectedHobbies.find(`.badge[data-hobby="${hobby}"]`).length === 0) {
+                $('<span/>', {
+                    class: 'badge bg-primary me-1 mb-1',
+                    'data-hobby': hobby,
+                    html: `${hobby} <span class="remove-hobby ms-1" style="cursor:pointer;">&times;</span>`
+                }).appendTo($selectedHobbies);
+                updateHobbiesFinal();
+            }
         }
         $hobbiesInput.val('');
         $hobbiesDropdown.hide();
     });
 
     $selectedHobbies.on('click', '.remove-hobby', function () {
-        $(this).parent().remove();
+        $(this).closest('.badge').remove();
         updateHobbiesFinal();
     });
 
     $('#hobby_add_btn').on('click', function () {
         const newHobby = $hobbyAddInput.val().trim();
-        if (newHobby) {
+        if (newHobby && !hobbies.includes(newHobby)) {
             hobbies.push(newHobby);
-            const badge = $(`<span class="badge bg-success me-1 mb-1">${newHobby} <span class="remove-hobby ms-1" style="cursor:pointer;">&times;</span></span>`);
-            $selectedHobbies.append(badge);
+            $('<span/>', {
+                class: 'badge bg-success me-1 mb-1',
+                'data-hobby': newHobby,
+                html: `${newHobby} <span class="remove-hobby ms-1" style="cursor:pointer;">&times;</span>`
+            }).appendTo($selectedHobbies);
             updateHobbiesFinal();
-            $hobbyAddInput.val('');
-            $hobbyAddContainer.hide();
         }
+        $hobbyAddInput.val('');
+        $hobbyAddContainer.hide();
     });
 
-    // ---- FORM VALIDATION & SUBMISSION WITH 3s DELAY ----
-    form.on('submit', function (e) {
+    // === Form Submission ===
+    $form.on('submit', function (e) {
         e.preventDefault();
-        form.addClass('was-validated');
-
-        if (!$hobbiesFinal.val()) {
-            $hobbiesInput[0].setCustomValidity('Please select at least one hobby.');
-        } else {
-            $hobbiesInput[0].setCustomValidity('');
-        }
+        $form.addClass('was-validated');
+        updateHobbiesFinal();
 
         if (!this.checkValidity()) {
             $('html, body').animate({ scrollTop: $('.is-invalid').first().offset().top - 100 }, 300);
             return;
         }
 
-        const $submitBtn = form.find('[type="submit"]');
+        const $submitBtn = $form.find('[type="submit"]');
         const originalText = $submitBtn.text();
         $submitBtn.prop('disabled', true).text(isEditMode ? 'Updating...' : 'Submitting...');
 
         const formData = new FormData(this);
-
         if (!formData.has('hobbies_final')) {
             formData.append('hobbies_final', $hobbiesFinal.val());
         }
 
-        // Delay AJAX submission by 3 seconds
-        setTimeout(function () {
+        setTimeout(() => {
             $.ajax({
-                url: form.attr('action'),
-                method: form.attr('method'),
+                url: $form.attr('action'),
+                method: $form.attr('method') || 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
@@ -152,22 +165,19 @@ $(document).ready(function () {
                     if (response.redirect) {
                         window.location.href = response.redirect;
                     } else {
-                        window.location.href = '05_crud.php';
+                        alert('Success!');
+                        $submitBtn.prop('disabled', false).text(originalText);
                     }
                 },
                 error: function (xhr) {
-                    let errorMsg = 'Form submission failed. Please try again.';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMsg = xhr.responseJSON.message;
-                    }
-                    alert(errorMsg);
+                    alert(xhr.responseJSON?.message || 'Form submission failed. Please try again.');
                     $submitBtn.prop('disabled', false).text(originalText);
                 }
             });
-        }, 3000); // <-- 3 second delay
+        }, 3000);
     });
 
-    // ---- FILE VALIDATION ----
+    // === File Validation ===
     $('#profile').on('change', function () {
         const file = this.files[0];
         if (file) {
@@ -179,6 +189,8 @@ $(document).ready(function () {
             } else {
                 this.setCustomValidity('');
             }
+        } else {
+            this.setCustomValidity('');
         }
     });
 });

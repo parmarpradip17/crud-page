@@ -111,7 +111,7 @@ $result = $conn->query($sql);
                                 <td class="text-center"><?= htmlspecialchars($row['passing_year']) ?></td>
                                 <td><?= htmlspecialchars($row['hobbies']) ?></td>
                                 <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
+                                    <div class="btn btn-sm">
                                         <a href="01_form.php?student_id=<?= $row['student_id'] ?>"
                                             class="btn btn-success">Edit</a>
                                         <a href="07_delete.php?id=<?= $row['student_id'] ?>"
