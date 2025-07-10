@@ -42,6 +42,7 @@ if ($isEdit) {
     $stmt->close();
 }
 
+
 // Fetch qualifications
 $qualifications = [];
 $result = $conn->query("SELECT qualification_name FROM qualifications");
@@ -242,18 +243,25 @@ while ($row = $result->fetch_assoc()) {
                 </div>
 
                 <!-- Hobbies -->
-                <div class="col-md-6">
+                <div class="col-md-12 mb-3">
                     <label class="form-label">Hobbies</label>
-                    <select name="hobby" id="hobby_select" class="form-select" required>
-                        <option value="">-- Select Hobby --</option>
-                        <?php foreach ($hobbiesList as $h): ?>
-                            <option value="<?= htmlspecialchars($h) ?>"
-                                <?= (!empty($studentHobbies) && $studentHobbies['hobby_name'] === $h) ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($h) ?>
-                            </option>
-                        <?php endforeach; ?>
-                        <option value="OTHERS">Others</option>
+                    <select name="hobbies[]" id="hobby_select" class="form-select" multiple required>
+                        <?php
+                        $selectedHobbies = $studentHobbies ?? []; // from PHP
+                        $result = $conn->query("SELECT id, hobby_name FROM hobbies");
+                        while ($row = $result->fetch_assoc()):
+                            $isSelected = in_array($row['id'], $selectedHobbies) ? 'selected' : '';
+                        ?>
+                            <option value="<?= $row['id'] ?>" <?= $isSelected ?>><?= htmlspecialchars($row['hobby_name']) ?></option>
+                        <?php endwhile; ?>
                     </select>
+                    <small class="text-muted">Hold Ctrl or Cmd to select multiple hobbies</small>
+                </div>
+
+                <!-- Add new hobby input -->
+                <div class="col-md-12 mb-3">
+                    <label for="new_hobby" class="form-label">Add New Hobby (optional)</label>
+                    <input type="text" name="new_hobby" id="new_hobby" class="form-control" placeholder="Enter new hobby if not listed">
                 </div>
 
                 <div id="other_hobby_container" class="col-md-12" style="display: none;">
