@@ -4,16 +4,14 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Define $isEdit before using it
 $isEdit = isset($_GET['student_id']);
 $studentData = [];
 $studentHobbies = [];
 
-// Fetch existing student data if editing
 if ($isEdit) {
     $studentId = intval($_GET['student_id']);
 
-    // Student details
+    // Fetch student main data
     $stmt = $conn->prepare("
         SELECT sb.*, sg.*, sa.percentage, sa.passing_year, sa.university, q.qualification_name
         FROM stud_basic_info sb
@@ -28,7 +26,7 @@ if ($isEdit) {
     $studentData = $result->fetch_assoc();
     $stmt->close();
 
-    // Student hobbies
+    // Fetch hobbies
     $stmt = $conn->prepare("
         SELECT h.hobby_name 
         FROM stud_hobbies sh
@@ -39,21 +37,21 @@ if ($isEdit) {
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
-        $studentHobbies[] = $row['hobby_name'];
+        $hobbiesList[] = $row['hobby_name'];
     }
     $stmt->close();
 }
 
-// Get qualifications
+// Fetch qualifications
 $qualifications = [];
-$result = $conn->query("SELECT qualification_name FROM qualifications ORDER BY qualification_name ASC");
+$result = $conn->query("SELECT qualification_name FROM qualifications");
 while ($row = $result->fetch_assoc()) {
     $qualifications[] = $row['qualification_name'];
 }
 
-// Get hobbies
+// Fetch hobbies
 $hobbiesList = [];
-$result = $conn->query("SELECT hobby_name FROM hobbies ORDER BY hobby_name ASC");
+$result = $conn->query("SELECT hobby_name FROM hobbies");
 while ($row = $result->fetch_assoc()) {
     $hobbiesList[] = $row['hobby_name'];
 }
@@ -250,7 +248,7 @@ while ($row = $result->fetch_assoc()) {
                         <option value="">-- Select Hobby --</option>
                         <?php foreach ($hobbiesList as $h): ?>
                             <option value="<?= htmlspecialchars($h) ?>"
-                                <?= (!empty($studentData) && $studentData['hobby_name'] === $h) ? 'selected' : '' ?>>
+                                <?= (!empty($studentHobbies) && $studentHobbies['hobby_name'] === $h) ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($h) ?>
                             </option>
                         <?php endforeach; ?>
@@ -268,6 +266,7 @@ while ($row = $result->fetch_assoc()) {
                 </div>
             </div>
 
+
             <div class="d-flex justify-content-between mt-4">
                 <a href="05_crud.php" class="btn btn-secondary">Back to List</a>
                 <button type="submit" class="btn btn-primary"><?= $isEdit ? 'Update' : 'Submit' ?></button>
@@ -275,6 +274,7 @@ while ($row = $result->fetch_assoc()) {
         </form>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="./js/qualifications.js"></script>
     <script>
         const qualifications = <?= json_encode($qualifications) ?>;
@@ -284,7 +284,6 @@ while ($row = $result->fetch_assoc()) {
 
     <script src="./js/hobbies.js"></script>
     <script src="./js/form.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

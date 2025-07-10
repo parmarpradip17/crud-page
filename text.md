@@ -108,23 +108,23 @@ IF USER CAN CLICK OTHERS THTA HE CAN SHOW INPUT FILED THAT ADD NEW qualification
 -> Hobbies  (Watching Movies/TV,Gaming,Writing/Blogging ,Sports ,Travel,Reading,Volunteering/Community Involvement, Learning Languages ,Photography, Playing a Musical Instrument, Graphic Design/Digital Art ,Cooking/Baking , Woodworking/DIY Projects , Coding/Programming , OTHERS ) => IF USER CAN CLICK OTHERS THTA HE CAN SHOW INPUT FILED THAT ADD NEW qualification FOR THE USER AND THAT WAS DYNAMIC ADDITON 
 
 
-<!--* fname  -->
-<!--* lname  -->
-<!--* email  -->
-<!--* phone  -->
-<!--* resume(photo upload) -->
-<!--* gender -->
-<!--* address1 -->
-<!--* address2 -->
-<!--* city  -->
-<!--* state -->
-<!--* country -->
-<!--* zip   -->
-<!--* qualification (DYNAMIC) -->
-<!--* percentage -->
-<!--* passing year -->
-<!--* university -->
-<!--* Hobbies (DYNAMIC) -->
+    <!--* fname  -->
+    <!--* lname  -->
+    <!--* email  -->
+    <!--* phone  -->
+    <!--* resume(photo upload) -->
+    <!--* gender -->
+    <!--* address1 -->
+    <!--* address2 -->
+    <!--* city  -->
+    <!--* state -->
+    <!--* country -->
+    <!--* zip   -->
+    <!--* qualification (DYNAMIC) -->
+    <!--* percentage -->
+    <!--* passing year -->
+    <!--* university -->
+    <!--* Hobbies (DYNAMIC) -->
 
 
 

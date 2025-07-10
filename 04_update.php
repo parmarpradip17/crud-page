@@ -130,7 +130,7 @@ try {
     $hobbies = isset($_POST['hobbies_final']) ? array_filter(array_map('trim', explode(',', $_POST['hobbies_final']))) : [];
 
     foreach ($hobbies as $hobby) {
-        $hobby_id = getOrInsert($conn, 'hobbies', 'hobby_name', $hobby);
+        $hobby_id = getOrInsert($conn, 'stud_hobbies', 'hobby_id', $hobby);
 
         $stmt = $conn->prepare("INSERT INTO stud_hobbies (student_id, hobby_id) VALUES (?, ?)");
         $stmt->bind_param("ii", $student_id, $hobby_id);

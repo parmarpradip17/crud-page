@@ -64,15 +64,13 @@ $result = $conn->query($sql);
                 <thead class="table-dark text-center">
                     <tr>
                         <th>ID</th>
-                        <th>Photo</th>
                         <th>Name</th>
-                        <th>Email / Phone</th>
+                        <th>Photo</th>
+                        <th>Email </th>
+                        <th>Phone</th>
                         <th>Gender</th>
                         <th>City</th>
                         <th>Qualification</th>
-                        <th>University</th>
-                        <th>Percentage</th>
-                        <th>Passing Year</th>
                         <th>Hobbies</th>
                         <th>Actions</th>
                     </tr>
@@ -95,31 +93,20 @@ $result = $conn->query($sql);
                                     <?= htmlspecialchars($row['fname']) ?> <?= htmlspecialchars($row['lname']) ?>
                                     <div class="text-muted small">Student #<?= $row['student_id'] ?></div>
                                 </td>
-                                <td>
-                                    <a href="mailto:<?= htmlspecialchars($row['email']) ?>">
-                                        <?= htmlspecialchars($row['email']) ?>
-                                    </a><br>
-                                    <a href="tel:<?= htmlspecialchars($row['phone']) ?>">
-                                        <?= htmlspecialchars($row['phone']) ?>
-                                    </a>
-                                </td>
+                                <td class="text-center"><?= htmlspecialchars($row['email']) ?></td>
+                                <td class="text-center"><?= htmlspecialchars($row['phone']) ?></td>
                                 <td class="text-center"><?= htmlspecialchars($row['gender']) ?></td>
                                 <td class="text-center"><?= htmlspecialchars($row['city']) ?></td>
                                 <td><?= htmlspecialchars($row['qualification_name']) ?></td>
-                                <td><?= htmlspecialchars($row['university']) ?></td>
-                                <td class="text-center"><?= htmlspecialchars($row['percentage']) ?>%</td>
-                                <td class="text-center"><?= htmlspecialchars($row['passing_year']) ?></td>
                                 <td><?= htmlspecialchars($row['hobbies']) ?></td>
                                 <td class="text-center">
-                                    <div class="btn btn-sm">
-                                        <a href="01_form.php?student_id=<?= $row['student_id'] ?>"
-                                            class="btn btn-success">Edit</a>
-                                        <a href="07_delete.php?id=<?= $row['student_id'] ?>"
-                                            class="btn btn-danger"
-                                            onclick="return confirm('Are you sure you want to delete this student?')">
-                                            Delete
-                                        </a>
-                                    </div>
+                                    <a href="01_form.php?student_id=<?= $row['student_id'] ?>"
+                                        class="btn btn-sm btn-success " target='_blank'>Update</a>
+                                    <a href="07_delete.php?id=<?= $row['student_id'] ?>"
+                                        class="btn btn-sm btn-danger "
+                                        onclick="return confirm('Are you sure you want to delete this student?')">
+                                        Delete
+                                    </a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
