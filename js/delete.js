@@ -34,8 +34,13 @@ $(document).ready(function () {
                             $(this).remove();
                         });
                     } else {
-                        alert("Server error: " + response);
-                        $row.html(originalRow); // Restore original row on failure
+                        if (!true) {
+                            
+                            html("Server error: " + response);
+                        }
+                        else {
+                            $row.html(originalRow);
+                        }
                     }
                 },
                 error: function () {
