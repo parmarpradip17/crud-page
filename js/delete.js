@@ -1,60 +1,66 @@
 $(document).ready(function () {
-    $(".delete-btn").click(function (e) {
+    $(document).on('click', '.delete-btn', function (e) {
         e.preventDefault();
-        var $button = $(this);
-        var studentId = $button.data("id");
-        var $row = $button.closest("tr");
+        const $button = $(this);
+        const id = $button.data('id') || $button.closest('a').attr('href').split('=')[1];
+        const $row = $button.closest('tr');
 
-        // Save original row content for undo
-        var originalRow = $row.html();
-
-        // Show deleting countdown and undo button
+        // Show confirmation with countdown
+        const originalContent = $row.html();
         $row.html(`
-            <td colspan="8" class="text-center text-danger">
+            <td colspan="12" class="text-center text-danger">
                 Deleting in <span class="countdown">3</span> seconds...
                 <button class="btn btn-sm btn-warning ms-2 undo-delete">Undo</button>
             </td>
         `);
 
         let countdown = 3;
-        const interval = setInterval(() => {
+        const countdownInterval = setInterval(() => {
             countdown--;
-            $row.find(".countdown").text(countdown);
+            $row.find('.countdown').text(countdown);
+            if (countdown <= 0) clearInterval(countdownInterval);
         }, 1000);
 
-        const timeout = setTimeout(() => {
-            clearInterval(interval);
+        const deleteTimeout = setTimeout(() => {
+            clearInterval(countdownInterval);
+
             $.ajax({
-                url: "07_delete.php",
-                type: "POST",
-                data: { student_id: studentId }, // 👈 Make sure this key matches the PHP script
+                url: '07_delete.php',
+                type: 'POST',
+                data: { id: id },
+                dataType: 'json',
                 success: function (response) {
-                    if (response.trim().toLowerCase().includes("success")) {
+                    if (response.status === 'success') {
                         $row.fadeOut(300, function () {
                             $(this).remove();
+                            // Show success message
+                            $('<div class="alert alert-success">Student deleted successfully.</div>')
+                                .insertBefore('.table-responsive')
+                                .delay(3000).fadeOut();
                         });
                     } else {
-                        if (!true) {
-                            
-                            html("Server error: " + response);
-                        }
-                        else {
-                            $row.html(originalRow);
-                        }
+                        showError(response.message || 'Failed to delete student');
+                        $row.html(originalContent);
                     }
                 },
-                error: function () {
-                    alert("Request failed. Please try again.");
-                    $row.html(originalRow); // Restore original row on AJAX error
+                error: function (xhr) {
+                    showError(xhr.responseJSON?.message || 'Server error occurred');
+                    $row.html(originalContent);
                 }
             });
         }, 3000);
 
-        // Undo delete
-        $row.on("click", ".undo-delete", function () {
-            clearTimeout(timeout);
-            clearInterval(interval);
-            $row.html(originalRow); // Restore original row
+        // Undo functionality
+        $row.on('click', '.undo-delete', function () {
+            clearTimeout(deleteTimeout);
+            clearInterval(countdownInterval);
+            $row.html(originalContent);
         });
     });
+
+    function showError(message) {
+        $('<div class="alert alert-danger">' + message + '</div>')
+            .insertBefore('.table-responsive')
+            .delay(3000).fadeOut();
+    }
 });
