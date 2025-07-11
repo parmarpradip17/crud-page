@@ -43,6 +43,8 @@ if (!$result) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./css/curd.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 </head>
 
 <body class="bg-light">
@@ -61,7 +63,7 @@ if (!$result) {
             <div>
                 <span class="badge bg-primary">Total Students: <?= $result->num_rows ?></span>
             </div>
-            <a href="01_form.php" class="btn btn-primary">
+            <a href="01_form.php" class="btn btn-primary" target='_blank'>
                 <i class="bi bi-plus-circle"></i> Add New Student
             </a>
         </div>
@@ -119,12 +121,13 @@ if (!$result) {
                     <?php else: ?>
                         <tr>
                             <td colspan="10" class="text-center py-4">
-                                <div class="text-muted">No students found. <a href="01_form.php">Add a new student</a>.</div>
+                                <div class="text-muted">No students found. <a href="01_form.php" target='_blank'>Add a new student</a>.</div>
                             </td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
+            <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastArea"></div>
         </div>
     </div>
 

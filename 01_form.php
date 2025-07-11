@@ -13,7 +13,7 @@ if ($isEdit) {
 
 
     $stmt = $conn->prepare("
-        SELECT sb.*, sg.*, sa.percentage, sa.passing_year, sa.university, q.qualification_name
+        SELECT sb.*, sg.*, sg.gender, sa.percentage, sa.passing_year, sa.university, q.qualification_name
         FROM stud_basic_info sb
         JOIN stud_gen_info sg ON sb.id = sg.student_id
         JOIN stud_academic_info sa ON sb.id = sa.student_id
@@ -66,10 +66,49 @@ while ($row = $result->fetch_assoc()) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="./css/style.css">
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        #successMessage {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 1.2rem;
+            animation: pulse 1s ease-in-out infinite;
+            border-radius: 1rem;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.5);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            }
+        }
+    </style>
+
 </head>
 
 <body class="bg-light">
+
+    <div id="successMessage" class="alert alert-success text-center d-none" role="alert">
+        <div>
+            <strong>🎉 Form submitted successfully!</strong>
+        </div>
+        <div id="countdownText" class="mt-2">
+            Redirecting in <span id="countdownNumber">3</span>...
+        </div>
+        <div class="spinner-border text-success mt-2" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div id="toastArea" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
     <div class="container py-5">
+
+
         <h2 class="mb-4"><?= $isEdit ? 'Edit' : 'Add' ?> Student Resume</h2>
 
         <?php if (isset($_SESSION['msg'])): ?>
@@ -115,12 +154,12 @@ while ($row = $result->fetch_assoc()) {
                     <label class="form-label d-block">Gender</label>
                     <div class="form-check form-check-inline">
                         <input type="radio" name="gender" id="male" value="Male" class="form-check-input"
-                            <?= ($studentData['gender'] ?? '') === 'Male' ? 'checked' : '' ?>>
+                            <?= (isset($studentData['gender']) && $studentData['gender'] === 'Male') ? 'checked' : '' ?>>
                         <label class="form-check-label" for="male">Male</label>
                     </div>
                     <div class="form-check form-check-inline">
                         <input type="radio" name="gender" id="female" value="Female" class="form-check-input"
-                            <?= ($studentData['gender'] ?? '') === 'Female' ? 'checked' : '' ?>>
+                            <?= (isset($studentData['gender']) && $studentData['gender'] === 'Female') ? 'checked' : '' ?>>
                         <label class="form-check-label" for="female">Female</label>
                     </div>
                 </div>
@@ -251,6 +290,8 @@ while ($row = $result->fetch_assoc()) {
                 <a href="05_crud.php" class="btn btn-secondary">Back to List</a>
                 <button type="submit" class="btn btn-primary"><?= $isEdit ? 'Update' : 'Submit' ?></button>
             </div>
+            <!-- Success Message Container (Add this near your form) -->
+
         </form>
     </div>
 

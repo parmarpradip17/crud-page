@@ -44,7 +44,7 @@ $(document).ready(function () {
                     }
                 },
                 error: function (xhr) {
-                    showError(xhr.responseJSON?.message || 'Server error occurred');
+                    // showError(xhr.responseJSON?.message || 'Server error occurred');
                     $row.html(originalContent);
                 }
             });
@@ -58,9 +58,9 @@ $(document).ready(function () {
         });
     });
 
-    function showError(message) {
-        $('<div class="alert alert-danger">' + message + '</div>')
-            .insertBefore('.table-responsive')
-            .delay(3000).fadeOut();
-    }
+    // function showError(message) {
+    //     $('<div class="alert alert-danger">' + message + '</div>')
+    //         .insertBefore('.table-responsive')
+    //         .delay(3000).fadeOut();
+    // }
 });

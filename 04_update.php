@@ -98,7 +98,7 @@ try {
         $filename = uploadProfilePhoto($_FILES['profile']);
     }
 
-    $gender = $_POST['gender'];
+    $gender = $_POST['gender'] ?? '';
     $add1 = trim($_POST['add1']);
     $add2 = trim($_POST['add2'] ?? '');
     $city = trim($_POST['city']);

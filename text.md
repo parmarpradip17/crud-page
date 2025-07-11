@@ -161,5 +161,5 @@ INSERT INTO `stud_hobbies`( `student_id`, `hobby_id`) VALUES ('54','3')
 
 
 
-
-file:///C:/xampp/htdocs/
+DELETE FROM stud_basic_info;
+ALTER TABLE stud_basic_info AUTO_INCREMENT = 1;
