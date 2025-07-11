@@ -109,7 +109,7 @@ if (!$result) {
                                 <td class="text-center">
                                     <a href="01_form.php?student_id=<?= htmlspecialchars($row['student_id']) ?>"
                                         class="btn btn-sm btn-success " target='_blank'>Update</a>
-                                    <a href="07_delete.php?id=<?= htmlspecialchars($row['student_id']) ?>"
+                                    <a href="06_delete.php?id=<?= htmlspecialchars($row['student_id']) ?>"
                                         class="btn btn-sm btn-danger delete-btn">
                                         Delete
                                     </a>

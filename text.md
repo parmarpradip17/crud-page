@@ -48,6 +48,17 @@ CREATE TABLE qualifications (
     qualification_name VARCHAR(100) NOT NULL UNIQUE
 );
 
+INSERT INTO `qualifications`( `qualification_name`)
+ VALUES
+  ('BCA'),
+  ('MCA'),
+  ('B.COM'),
+  ('M.COM'),
+  ('B.TECH'),
+  ('M.TECH');
+
+
+
 CREATE TABLE stud_academic_info (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
@@ -67,7 +78,14 @@ CREATE TABLE hobbies (
     hobby_name VARCHAR(100) NOT NULL UNIQUE
 );
 
-
+INSERT INTO `hobbies`( `hobby_name`)
+ VALUES
+  ('Gaming'),
+  ('Sports'),
+  ('Travel'),
+  ('Reading'),
+  ('Photography'),
+  ('Cooking/Baking');
 
 CREATE TABLE stud_hobbies (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -108,7 +126,7 @@ GROUP BY sb.id;
 
 
 
--> qualification (DYNAMIC) -> (BCA , MCA , B.COM , MCOM, B.TECH ,M.TECH , B.A , M.A , OTHERS )
+-> qualification (DYNAMIC) -> (BCA , MCA , B.COM , MCOM, B.TECH ,M.TECH, B.A , M.A , OTHERS )
 IF USER CAN CLICK OTHERS THTA HE CAN SHOW INPUT FILED THAT ADD NEW qualification FOR THE USER AND THAT WAS DYNAMIC ADDITON
 
 -> Hobbies  (Watching Movies/TV,Gaming,Writing/Blogging ,Sports ,Travel,Reading,Volunteering/Community Involvement, Learning Languages ,Photography, Playing a Musical Instrument, Graphic Design/Digital Art ,Cooking/Baking , Woodworking/DIY Projects , Coding/Programming , OTHERS ) => IF USER CAN CLICK OTHERS THTA HE CAN SHOW INPUT FILED THAT ADD NEW qualification FOR THE USER AND THAT WAS DYNAMIC ADDITON 

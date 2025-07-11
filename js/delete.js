@@ -25,7 +25,7 @@ $(document).ready(function () {
             clearInterval(countdownInterval);
 
             $.ajax({
-                url: '07_delete.php',
+                url: '06_delete.php',
                 type: 'POST',
                 data: { id: id },
                 dataType: 'json',

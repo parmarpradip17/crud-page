@@ -29,6 +29,14 @@
     box-sizing: border-box;
 }
 
+
+img.img-thumbnail.mt-2 {
+    position: absolute;
+    right: 60%;
+    left: 34%;
+    top: 58%;
+}
+
 .autocomplete-dropdown {
     position: absolute;
     z-index: 1000;

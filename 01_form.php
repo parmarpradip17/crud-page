@@ -11,7 +11,7 @@ $studentHobbies = [];
 if ($isEdit) {
     $studentId = intval($_GET['student_id']);
 
-    // Fetch student main data
+
     $stmt = $conn->prepare("
         SELECT sb.*, sg.*, sa.percentage, sa.passing_year, sa.university, q.qualification_name
         FROM stud_basic_info sb
@@ -26,7 +26,7 @@ if ($isEdit) {
     $studentData = $result->fetch_assoc();
     $stmt->close();
 
-    // Fetch student hobbies
+
     $stmt = $conn->prepare("
         SELECT h.hobby_name 
         FROM stud_hobbies sh
@@ -42,16 +42,16 @@ if ($isEdit) {
     $stmt->close();
 }
 
-// Fetch qualifications
+
 $qualifications = [];
-$result = $conn->query("SELECT qualification_name FROM qualifications");
+$result = $conn->query("SELECT qualification_name FROM qualifications order by id ASC");
 while ($row = $result->fetch_assoc()) {
     $qualifications[] = $row['qualification_name'];
 }
 
-// Fetch all hobbies
+
 $allHobbies = [];
-$result = $conn->query("SELECT hobby_name FROM hobbies");
+$result = $conn->query("SELECT hobby_name FROM hobbies order by id ASC");
 while ($row = $result->fetch_assoc()) {
     $allHobbies[] = $row['hobby_name'];
 }
@@ -163,8 +163,8 @@ while ($row = $result->fetch_assoc()) {
                 <div class="col-md-4 my-2 ">
                     <label for="country" class="form-label">Country</label>
                     <select name="country" id="country" class="form-select" required>
-                        <option value="">Select Country</option>
-                        <?php foreach (['USA', 'India', 'Canada', 'Australia'] as $c): ?>
+                        <option value="" selected disabled>Select Country</option>
+                        <?php foreach (['India', 'USA', 'Canada', 'Australia'] as $c): ?>
                             <option value="<?= $c ?>" <?= ($studentData['country'] ?? '') === $c ? 'selected' : '' ?>>
                                 <?= $c ?>
                             </option>
@@ -182,7 +182,7 @@ while ($row = $result->fetch_assoc()) {
                 <div class="col-md-6 my-2 ">
                     <label class="form-label">Qualification</label>
                     <select name="quali" id="quali_select" class="form-select" required>
-                        <option value="">-- Select Qualification --</option>
+                        <option value="" selected disabled>-- Select Qualification --</option>
                         <?php foreach ($qualifications as $q): ?>
                             <option value="<?= htmlspecialchars($q) ?>" <?= ($studentData['qualification_name'] ?? '') === $q ? 'selected' : '' ?>>
                                 <?= htmlspecialchars($q) ?>
@@ -213,7 +213,7 @@ while ($row = $result->fetch_assoc()) {
 
                 <div class="col-md-4 my-2 ">
                     <label for="passing_year" class="form-label">Passing Year</label>
-                    <input type="text" name="passing_year" id="passing_year" class="form-control" min="1900" max="<?= date('Y') + 5 ?>"
+                    <input type="text" name="passing_year" id="passing_year" class="form-control" maxlength="4" min="1900" max="<?= date('Y') + 5 ?>"
                         value="<?= htmlspecialchars($studentData['passing_year'] ?? '') ?>" required>
                 </div>
 
@@ -260,24 +260,7 @@ while ($row = $result->fetch_assoc()) {
         const hobbies = <?= json_encode($hobbiesList) ?>;
         const isEditMode = <?= $isEdit ? 'true' : 'false' ?>;
     </script>
-    <script>
-        document.getElementById('stud_form').addEventListener('submit', function(e) {
-            const select = document.getElementById('hobby_select');
-            const hiddenInput = document.getElementById('hobbies_final');
-            let selected = Array.from(select.selectedOptions).map(opt => opt.value);
-
-            if (selected.includes('OTHERS')) {
-                const other = prompt('Enter your hobby:');
-                if (other && other.trim() !== '') {
-                    selected[selected.indexOf('OTHERS')] = other.trim();
-                } else {
-                    selected = selected.filter(v => v !== 'OTHERS');
-                }
-            }
-
-            hiddenInput.value = selected.join(',');
-        });
-    </script>
+    <script src="./js/hidehobbies.js"></script>
     <script src="./js/form.js"></script>
     <script src="./js/qualifications.js"></script>
     <script src="./js/hobbies.js"></script>
