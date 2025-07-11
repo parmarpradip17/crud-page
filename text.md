@@ -11,6 +11,8 @@ CREATE TABLE stud_basic_info (
         phone VARCHAR(15) NOT NULL 
 );
 
+INSERT INTO `stud_basic_info`( `fname`, `lname`, `email`, `phone`) VALUES ('parmar','pradip','parmarparth@gmail.com','7103425012')
+
 <!--! gender -->
 <!--! address1 -->
 <!--! address2 -->
@@ -34,6 +36,8 @@ CREATE TABLE stud_gen_info (
     FOREIGN KEY (student_id) REFERENCES stud_basic_info(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+
+INSERT INTO `stud_gen_info`(`student_id`, `gender`, `address1`, `address2`, `city`, `state`, `country`, `zip`, `photo`) VALUES ('54','male','Junagadh','Junagadh','Junagadh','Gujrat','India','235689','')
 <!--! qualification   -->
 <!--! percentage -->
 <!--! passing year -->
@@ -55,7 +59,7 @@ CREATE TABLE stud_academic_info (
     FOREIGN KEY (qualification_id) REFERENCES qualifications(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
+INSERT INTO `stud_academic_info`( `student_id`, `qualification_id`, `percentage`, `passing_year`, `university`) VALUES ('54','3','67.36','2023',Mmarvadi University')
 <!--! Hobbies -->
 
 CREATE TABLE hobbies (
@@ -72,6 +76,8 @@ CREATE TABLE stud_hobbies (
     FOREIGN KEY (student_id) REFERENCES stud_basic_info(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (hobby_id) REFERENCES hobbies(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+INSERT INTO `stud_hobbies`( `student_id`, `hobby_id`) VALUES ('54','3')
 
 
 SELECT 
@@ -129,7 +135,13 @@ IF USER CAN CLICK OTHERS THTA HE CAN SHOW INPUT FILED THAT ADD NEW qualification
 
 
 
+INSERT INTO `stud_basic_info`( `fname`, `lname`, `email`, `phone`) VALUES ('parmar','pradip','parmarparth@gmail.com','7103425012')
+INSERT INTO `stud_gen_info`(`student_id`, `gender`, `address1`, `address2`, `city`, `state`, `country`, `zip`, `photo`) VALUES ('54','male','Junagadh','Junagadh','Junagadh','Gujrat','India','235689','')
+INSERT INTO `stud_academic_info`( `student_id`, `qualification_id`, `percentage`, `passing_year`, `university`) VALUES ('54','3','67.36','2023',Mmarvadi University')
+INSERT INTO `stud_hobbies`( `student_id`, `hobby_id`) VALUES ('54','3')
 
 
 
 
+
+file:///C:/xampp/htdocs/

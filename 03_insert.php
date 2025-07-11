@@ -1,13 +1,40 @@
 <?php
-require '00_db.php';
 session_start();
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: 01_form.php");
-    exit;
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// DB connection
+$conn = new mysqli("localhost", "root", "", "stud_resume");
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
 }
 
-// Helper function to get or insert qualification/hobby
+// Helper: Upload profile photo
+function uploadProfilePhoto($file)
+{
+    $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+    if (!in_array($ext, $allowed)) {
+        throw new Exception("Only JPG, PNG, and GIF files are allowed.");
+    }
+
+    $uploadDir = "uploads/";
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+
+    $filename = $uploadDir . uniqid() . '.' . $ext;
+    if (!move_uploaded_file($file['tmp_name'], $filename)) {
+        throw new Exception("Failed to upload file.");
+    }
+
+    return $filename;
+}
+
+// Helper: Get or insert value
 function getOrInsert($conn, $table, $column, $value)
 {
     $stmt = $conn->prepare("SELECT id FROM $table WHERE $column = ?");
@@ -25,16 +52,26 @@ function getOrInsert($conn, $table, $column, $value)
     return $stmt->insert_id;
 }
 
+// Process form
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: 01_form.php");
+    exit;
+}
+
 try {
     $conn->begin_transaction();
 
-    // Basic info
+    // Sanitize and validate input
     $fname = trim($_POST['fname']);
     $lname = trim($_POST['lname']);
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
 
-    // Check if email already exists
+    if (empty($fname) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        throw new Exception("Invalid or missing name/email");
+    }
+
+    // Check for duplicate email
     $stmt = $conn->prepare("SELECT id FROM stud_basic_info WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -50,28 +87,13 @@ try {
     $student_id = $stmt->insert_id;
     $stmt->close();
 
-    // Handle file upload
+    // Upload profile photo
     $filename = '';
     if (isset($_FILES['profile']) && $_FILES['profile']['error'] === UPLOAD_ERR_OK) {
-        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
-        $ext = strtolower(pathinfo($_FILES['profile']['name'], PATHINFO_EXTENSION));
-
-        if (!in_array($ext, $allowed)) {
-            throw new Exception("Only JPG, PNG, and GIF files are allowed.");
-        }
-
-        $uploadDir = "uploads/";
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        $filename = $uploadDir . uniqid() . '.' . $ext;
-        if (!move_uploaded_file($_FILES['profile']['tmp_name'], $filename)) {
-            throw new Exception("Failed to upload file.");
-        }
+        $filename = uploadProfilePhoto($_FILES['profile']);
     }
 
-    // General info
+    // Insert general info
     $gender = $_POST['gender'];
     $add1 = trim($_POST['add1']);
     $add2 = trim($_POST['add2'] ?? '');
@@ -87,7 +109,7 @@ try {
     $stmt->execute();
     $stmt->close();
 
-    // Academic info
+    // Insert academic info
     $quali = trim($_POST['quali']);
     $percentage = floatval($_POST['percentage']);
     $passing_year = intval($_POST['passing_year']);
@@ -102,21 +124,11 @@ try {
     $stmt->execute();
     $stmt->close();
 
-    // // Hobbies
-    // $hobbies = isset($_POST['hobbies_final']) ? array_filter(array_map('trim', explode(',', $_POST['hobbies_final']))) : [];
-
-    // foreach ($hobbies as $hobby) {
-    //     $hobby_id = getOrInsert($conn, 'stud_hobbies', 'hobby_name', $hobby);
-
-    //     $stmt = $conn->prepare("INSERT INTO stud_hobbies (student_id, hobby_id) VALUES (?, ?)");
-    //     $stmt->bind_param("ii", $student_id, $hobby_id);
-    //     $stmt->execute();
-    //     $stmt->close();
-    // }
+    // Insert hobbies
     $hobbies = isset($_POST['hobbies_final']) ? array_filter(array_map('trim', explode(',', $_POST['hobbies_final']))) : [];
 
     foreach ($hobbies as $hobby) {
-        // Query hobby_id from the hobbies table
+        // Check if hobby exists
         $stmt = $conn->prepare("SELECT id FROM hobbies WHERE hobby_name = ?");
         $stmt->bind_param("s", $hobby);
         $stmt->execute();
@@ -124,16 +136,20 @@ try {
 
         if ($stmt->fetch()) {
             $stmt->close();
-
-            // Insert into stud_hobbies
-            $insert = $conn->prepare("INSERT INTO stud_hobbies (student_id, hobby_id) VALUES (?, ?)");
-            $insert->bind_param("ii", $student_id, $hobby_id);
-            $insert->execute();
-            $insert->close();
         } else {
-            // Hobby does not exist in `hobbies` table — skip
             $stmt->close();
+            $insert_hobby = $conn->prepare("INSERT INTO hobbies (hobby_name) VALUES (?)");
+            $insert_hobby->bind_param("s", $hobby);
+            $insert_hobby->execute();
+            $hobby_id = $insert_hobby->insert_id;
+            $insert_hobby->close();
         }
+
+        // Insert into junction table
+        $insert = $conn->prepare("INSERT INTO stud_hobbies (student_id, hobby_id) VALUES (?, ?)");
+        $insert->bind_param("ii", $student_id, $hobby_id);
+        $insert->execute();
+        $insert->close();
     }
 
     $conn->commit();
@@ -148,5 +164,3 @@ try {
     header("Location: 01_form.php");
     exit;
 }
-?>
-<?php ?>

@@ -2,58 +2,45 @@
 require '00_db.php';
 session_start();
 
-if (!isset($_GET['id'])) {
-    $_SESSION['msg'] = "No student ID provided for deletion.";
-    $_SESSION['msg_type'] = "danger";
-    header("Location: 05_crud.php");
-    exit;
-}
+$id = isset($_POST['student_id']) ? intval($_POST['student_id']) : (isset($_POST['id']) ? intval($_POST['id']) : 0);
 
-$student_id = intval($_GET['id']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $id > 0) {
+    try {
+        $conn->begin_transaction();
 
-if ($student_id <= 0) {
-    $_SESSION['msg'] = "Invalid student ID.";
-    $_SESSION['msg_type'] = "danger";
-    header("Location: 05_crud.php");
-    exit;
-}
+        // Optional debug
+        // echo "Deleting student ID: $id";
 
-try {
-    $conn->begin_transaction();
-
-    // First get the photo path to delete the file later
-    $stmt = $conn->prepare("SELECT photo FROM stud_gen_info WHERE student_id = ?");
-    $stmt->bind_param("i", $student_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $photo = $result->fetch_assoc()['photo'] ?? '';
-    $stmt->close();
-
-    // Delete from all related tables
-    $tables = ['stud_hobbies', 'stud_academic_info', 'stud_gen_info', 'stud_basic_info'];
-    foreach ($tables as $table) {
-        $column = ($table === 'stud_basic_info') ? 'id' : 'student_id';
-        $stmt = $conn->prepare("DELETE FROM $table WHERE $column = ?");
-        $stmt->bind_param("i", $student_id);
+        // 1. Delete hobbies
+        $stmt = $conn->prepare("DELETE FROM stud_hobbies WHERE student_id = ?");
+        $stmt->bind_param("i", $id);
         $stmt->execute();
         $stmt->close();
-    }
 
-    // Delete the photo file if it exists
-    if ($photo && file_exists($photo)) {
-        unlink($photo);
-    }
+        // 2. Delete academic info
+        $stmt = $conn->prepare("DELETE FROM stud_academic_info WHERE student_id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
 
-    $conn->commit();
-    $_SESSION['msg'] = "Student deleted successfully.";
-    $_SESSION['msg_type'] = "success";
-} catch (Exception $e) {
-    $conn->rollback();
-    $_SESSION['msg'] = "Error deleting student: " . $e->getMessage();
-    $_SESSION['msg_type'] = "danger";
+        // 3. Delete general info
+        $stmt = $conn->prepare("DELETE FROM stud_gen_info WHERE student_id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+
+        // 4. Delete main record
+        $stmt = $conn->prepare("DELETE FROM stud_basic_info WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+
+        $conn->commit();
+        echo "Deleted successfully.";
+    } catch (Exception $e) {
+        $conn->rollback();
+        echo "SQL Error: " . $conn->error;
+    }
+} else {
+    echo "Invalid or missing student ID.";
 }
-
-header("Location: 05_crud.php");
-exit;
-?>
-<?php ?>

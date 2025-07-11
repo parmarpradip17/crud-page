@@ -25,7 +25,7 @@ LEFT JOIN qualifications q ON sa.qualification_id = q.id
 LEFT JOIN stud_hobbies sh ON sb.id = sh.student_id
 LEFT JOIN hobbies h ON sh.hobby_id = h.id
 GROUP BY sb.id
-ORDER BY sb.id ASC"; // Added ORDER BY for consistent display
+ORDER BY sb.id ASC";
 
 $result = $conn->query($sql);
 
@@ -41,7 +41,8 @@ if (!$result) {
 <head>
     <title>Student List (CRUD)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./css/curd.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="./css/curd.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
 <body class="bg-light">
@@ -109,8 +110,7 @@ if (!$result) {
                                     <a href="01_form.php?student_id=<?= htmlspecialchars($row['student_id']) ?>"
                                         class="btn btn-sm btn-success " target='_blank'>Update</a>
                                     <a href="07_delete.php?id=<?= htmlspecialchars($row['student_id']) ?>"
-                                        class="btn btn-sm btn-danger "
-                                        onclick="return confirm('Are you sure you want to delete this student?')">
+                                        class="btn btn-sm btn-danger delete-btn">
                                         Delete
                                     </a>
                                 </td>
@@ -129,6 +129,7 @@ if (!$result) {
     </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="./js/delete.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

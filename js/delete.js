@@ -1,60 +1,55 @@
 $(document).ready(function () {
-    $(document).on('click', '.delete-btn', function (e) {
+    $(".delete-btn").click(function (e) {
         e.preventDefault();
-        const $button = $(this);
-        const id = $button.data('id') || $button.closest('a').attr('href').split('=')[1];
-        const $row = $button.closest('tr');
+        var $button = $(this);
+        var studentId = $button.data("id");
+        var $row = $button.closest("tr");
 
-        // Show confirmation with countdown
-        const originalContent = $row.html();
+        // Save original row content for undo
+        var originalRow = $row.html();
+
+        // Show deleting countdown and undo button
         $row.html(`
-            <td colspan="12" class="text-center text-danger">
+            <td colspan="8" class="text-center text-danger">
                 Deleting in <span class="countdown">3</span> seconds...
                 <button class="btn btn-sm btn-warning ms-2 undo-delete">Undo</button>
             </td>
         `);
 
         let countdown = 3;
-        const countdownInterval = setInterval(() => {
+        const interval = setInterval(() => {
             countdown--;
-            $row.find('.countdown').text(countdown);
-            if (countdown <= 0) clearInterval(countdownInterval);
+            $row.find(".countdown").text(countdown);
         }, 1000);
 
-        const deleteTimeout = setTimeout(() => {
-            clearInterval(countdownInterval);
-
+        const timeout = setTimeout(() => {
+            clearInterval(interval);
             $.ajax({
-                url: '07_delete.php',
-                type: 'GET',
-                data: { id: id },
-                success: function () {
-                    $row.fadeOut(300, function () {
-                        $(this).remove();
-                        // Show success message
-                        $('<div class="alert alert-success alert-dismissible fade show">Student deleted successfully.</div>')
-                            .insertBefore('.table-responsive')
-                            .delay(3000).fadeOut();
-                    });
+                url: "07_delete.php",
+                type: "POST",
+                data: { student_id: studentId }, // 👈 Make sure this key matches the PHP script
+                success: function (response) {
+                    if (response.trim().toLowerCase().includes("success")) {
+                        $row.fadeOut(300, function () {
+                            $(this).remove();
+                        });
+                    } else {
+                        alert("Server error: " + response);
+                        $row.html(originalRow); // Restore original row on failure
+                    }
                 },
-                error: function (xhr) {
-                    showError(xhr.responseJSON?.message || 'Server error occurred');
-                    $row.html(originalContent);
+                error: function () {
+                    alert("Request failed. Please try again.");
+                    $row.html(originalRow); // Restore original row on AJAX error
                 }
             });
         }, 3000);
 
-        // Undo functionality
-        $row.on('click', '.undo-delete', function () {
-            clearTimeout(deleteTimeout);
-            clearInterval(countdownInterval);
-            $row.html(originalContent);
+        // Undo delete
+        $row.on("click", ".undo-delete", function () {
+            clearTimeout(timeout);
+            clearInterval(interval);
+            $row.html(originalRow); // Restore original row
         });
     });
-
-    function showError(message) {
-        $('<div class="alert alert-danger alert-dismissible fade show">' + message + '</div>')
-            .insertBefore('.table-responsive')
-            .delay(3000).fadeOut();
-    }
 });
